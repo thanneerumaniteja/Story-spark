@@ -1,0 +1,6 @@
+{
+  "name": "StorySpark",
+  "description": "A social publishing and discovery platform for standalone short stories — matched to your mood, genre, and available reading time.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

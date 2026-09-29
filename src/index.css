@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #111113;
+  --surface-pane: #151517;
+  --surface-card: #18181b;
+  --surface-tag: #1c1c1f;
+  --ink: #ececec;
+  --accent: #5e66ff;
+  --ink-dim: rgba(236, 236, 236, 0.52);
+  --border: rgba(236, 236, 236, 0.12);
+  --font-display: 'Syne', sans-serif;
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --font-serif: 'Newsreader', Georgia, serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-brand,
+.font-editorial {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.font-prose {
+  font-family: var(--font-serif);
+}
+
+.font-ui {
+  font-family: var(--font-sans);
+}
+
+.font-tabular,
+.meta-label {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+}
+
+.balance-text {
+  text-wrap: balance;
+}
+
+/* Custom dark scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111113;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(236, 236, 236, 0.16);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 102, 255, 0.5);
+}
