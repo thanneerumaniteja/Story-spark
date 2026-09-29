@@ -524,7 +524,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-[#111113] text-[#ececec] pb-16 md:pb-0">
       {/* VARIATION 5 TOP HEADER */}
-      <header className="sticky top-0 z-30 h-16 bg-[#111113]/85 backdrop-blur-md border-b border-white/12 px-6 flex items-center justify-between">
+      <header className="sticky top-0 z-30 min-h-14 py-2 bg-[#111113]/90 backdrop-blur-md border-b border-white/12 px-3 sm:px-5 flex flex-wrap items-center justify-between gap-2 text-xs">
         {/* Brand Wordmark */}
         <button
           type="button"
@@ -534,13 +534,13 @@ export default function App() {
             setSelectedGenre(null);
             setActiveNav('discover');
           }}
-          className="font-brand text-xl tracking-tight text-white uppercase cursor-pointer"
+          className="font-brand text-base sm:text-lg tracking-tight text-white uppercase cursor-pointer shrink-0"
         >
           STORYSPARK.
         </button>
 
         {/* Center Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1.5">
+        <nav className="hidden md:flex items-center gap-1">
           {(
             [
               { id: 'discover', label: 'Discover' },
@@ -558,10 +558,10 @@ export default function App() {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveNav(item.id)}
-                className={`px-4 py-2 rounded-[4px] text-[13.5px] transition-all cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-[4px] text-xs transition-all cursor-pointer ${
                   isActive
                     ? 'text-[#5e66ff] bg-[#5e66ff]/12 font-medium'
-                    : 'text-[#ececec]/55 hover:text-[#ececec] hover:bg-white/5'
+                    : 'text-[#ececec]/60 hover:text-[#ececec] hover:bg-white/5'
                 }`}
               >
                 {item.label}
@@ -571,7 +571,7 @@ export default function App() {
         </nav>
 
         {/* Right Actions: Theme Selector (Light / Dark), Profile & Unified Sign In */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Light / Dark Theme Selector */}
           <div
             role="group"
@@ -581,50 +581,51 @@ export default function App() {
             <button
               type="button"
               onClick={() => setAppTheme('light')}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[3px] text-xs font-medium transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-[3px] text-[11px] font-medium transition-colors cursor-pointer ${
                 appTheme === 'light'
                   ? 'bg-[#5e66ff] text-white'
                   : 'text-[#ececec]/60 hover:text-white'
               }`}
               title="Switch to Light Theme"
             >
-              <Sun className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Light</span>
+              <Sun className="w-3 h-3" />
+              <span className="hidden lg:inline">Light</span>
             </button>
             <button
               type="button"
               onClick={() => setAppTheme('dark')}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[3px] text-xs font-medium transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-[3px] text-[11px] font-medium transition-colors cursor-pointer ${
                 appTheme === 'dark'
                   ? 'bg-[#5e66ff] text-white'
                   : 'text-[#ececec]/60 hover:text-white'
               }`}
               title="Switch to Dark Theme"
             >
-              <Moon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Dark</span>
+              <Moon className="w-3 h-3" />
+              <span className="hidden lg:inline">Dark</span>
             </button>
           </div>
 
           <button
             type="button"
             onClick={() => setActiveNav('profile')}
-            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-xs transition-colors cursor-pointer ${
               activeNav === 'profile'
                 ? 'text-[#5e66ff] bg-[#5e66ff]/12 border border-[#5e66ff]/40'
-                : 'text-[#ececec]/60 hover:text-white'
+                : 'text-[#ececec]/70 hover:text-white border border-transparent'
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span>Profile</span>
+            <span className="hidden sm:inline">Profile</span>
           </button>
 
           <button
             type="button"
             onClick={() => setAuthModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-[4px] text-[13px] text-[#ececec]/80 hover:text-white hover:border-[#5e66ff] border border-white/12 bg-transparent transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-semibold bg-[#5e66ff] hover:bg-[#4e56f0] text-white transition-colors cursor-pointer whitespace-nowrap shadow-xs"
           >
-            Sign In ({userState.readerName})
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In ({userState.readerName})</span>
           </button>
         </div>
       </header>
@@ -645,7 +646,7 @@ export default function App() {
               <span className="meta-label block mb-3">
                 Selection Algorithm v2.4 · A few minutes. A whole story.
               </span>
-              <h1 className="font-brand text-4xl sm:text-6xl md:text-[72px] text-white leading-[0.88] tracking-[-0.05em] uppercase mb-6">
+              <h1 className="font-brand text-[30px] text-white leading-[0.88] tracking-[-0.05em] uppercase mb-6">
                 FEELING SOMETHING?
               </h1>
               <div className="flex flex-wrap justify-center gap-3">
