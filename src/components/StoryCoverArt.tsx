@@ -20,7 +20,7 @@ export const StoryCoverArt: React.FC<StoryCoverArtProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden select-none rounded-[4px] bg-[#222226] ${aspectClass} ${className}`}
+      className={`story-cover-art relative overflow-hidden select-none rounded-[4px] bg-[#222226] ${aspectClass} ${className}`}
       style={{ backgroundColor: story.coverTone || '#222226' }}
     >
       {showImage ? (

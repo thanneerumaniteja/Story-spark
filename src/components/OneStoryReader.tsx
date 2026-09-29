@@ -33,6 +33,8 @@ interface OneStoryReaderProps {
   onSetBookmark: (storyId: string, paragraphIndex: number) => void;
   onAddStoryToCollection: (collectionId: string, storyId: string) => void;
   onMarkCompleted: (storyId: string) => void;
+  appTheme?: 'light' | 'dark';
+  onChangeAppTheme?: (theme: 'light' | 'dark') => void;
 }
 
 const REACTION_META: { type: ReactionType; emoji: string; label: string }[] = [
@@ -63,8 +65,14 @@ export const OneStoryReader: React.FC<OneStoryReaderProps> = ({
   onSetBookmark,
   onAddStoryToCollection,
   onMarkCompleted,
+  appTheme = 'dark',
+  onChangeAppTheme,
 }) => {
-  const [theme, setTheme] = useState<'light' | 'sepia' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'sepia' | 'dark'>(appTheme);
+
+  useEffect(() => {
+    setTheme(appTheme);
+  }, [appTheme]);
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
   const [progress, setProgress] = useState(0);
   const [commentText, setCommentText] = useState('');

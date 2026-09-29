@@ -558,7 +558,7 @@ export const INITIAL_WRITERS: WriterProfile[] = [
 ];
 
 export const INITIAL_USER_STATE: UserState = {
-  readerName: 'Alex',
+  readerName: 'Arjun',
   writerName: 'Arjun',
   writerId: 'writer-arjun',
   writerBio: 'Night-shift archivist and short fiction writer exploring memory, urban solitude, and quiet mysteries.',
@@ -567,7 +567,7 @@ export const INITIAL_USER_STATE: UserState = {
   readStoryIds: ['story-last-train', 'story-two-minute-alibi'],
   likedStoryIds: ['story-last-train'],
   savedStoryIds: ['story-last-train', 'story-before-sunrise'],
-  followedWriterIds: ['writer-arjun', 'writer-ananya', 'writer-nadia'],
+  followedWriterIds: ['writer-ananya', 'writer-nadia', 'writer-elias'],
   userReactions: {
     'story-last-train': 'unexpected',
   },

@@ -619,6 +619,7 @@ interface ProfileViewProps {
   collections: StoryCollection[];
   onReadStory: (story: Story) => void;
   onOpenAuthModal?: () => void;
+  onOpenWriteStudio?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -627,52 +628,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   collections,
   onReadStory,
   onOpenAuthModal,
+  onOpenWriteStudio,
 }) => {
-  const [roleView, setRoleView] = useState<'reader' | 'writer'>('reader');
-
+  const unifiedName = userState.readerName || userState.writerName || 'Arjun';
   const writerStories = stories.filter(
-    (s) => !s.isDraft && s.author.toLowerCase() === userState.writerName.toLowerCase()
+    (s) =>
+      !s.isDraft &&
+      (s.author.toLowerCase() === unifiedName.toLowerCase() ||
+        s.author.toLowerCase() === userState.writerName.toLowerCase())
   );
+  const totalReadsOnStories = writerStories.reduce((sum, s) => sum + s.reads, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/12 pb-6">
         <div>
           <span className="meta-label !text-[#5e66ff] block mb-1">
-            Signed-In Member Profile
+            Unified StorySpark Account · Read & Write
           </span>
           <h1 className="font-brand text-3xl md:text-4xl text-white uppercase">
-            {roleView === 'reader' ? userState.readerName : userState.writerName}
+            {unifiedName}
           </h1>
+          <p className="text-sm text-[#ececec]/65 mt-1 max-w-2xl">
+            {userState.writerBio}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center border border-white/12 bg-[#18181b] rounded-[4px] p-1">
+          {onOpenWriteStudio && (
             <button
               type="button"
-              onClick={() => setRoleView('reader')}
-              className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-[4px] transition-colors cursor-pointer ${
-                roleView === 'reader'
-                  ? 'bg-[#5e66ff] text-white'
-                  : 'text-[#ececec]/60 hover:text-white'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Reader ({userState.readerName})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRoleView('writer')}
-              className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-[4px] transition-colors cursor-pointer ${
-                roleView === 'writer'
-                  ? 'bg-[#5e66ff] text-white'
-                  : 'text-[#ececec]/60 hover:text-white'
-              }`}
+              onClick={onOpenWriteStudio}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-[#5e66ff] text-white hover:bg-[#4e56f0] rounded-[4px] transition-colors cursor-pointer"
             >
               <Feather className="w-3.5 h-3.5" />
-              <span>Writer ({userState.writerName})</span>
+              <span>Write / Upload Story</span>
             </button>
-          </div>
+          )}
 
           {onOpenAuthModal && (
             <button
@@ -681,120 +673,155 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold border border-[#5e66ff] text-[#5e66ff] hover:bg-[#5e66ff] hover:text-white rounded-[4px] transition-colors cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Switch Account</span>
+              <span>Switch / Edit Account</span>
             </button>
           )}
         </div>
       </div>
 
-      {roleView === 'reader' ? (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          <div className="md:col-span-5 p-6 bg-[#18181b] border border-white/12 rounded-[4px] space-y-6">
-            <div>
-              <h2 className="font-brand text-2xl text-white uppercase">{userState.readerName}</h2>
-              <p className="meta-label mt-1">Avid Short Story Reader</p>
-            </div>
-
-            <dl className="divide-y divide-white/12 text-sm">
-              <div className="py-2.5 flex items-center justify-between">
-                <dt className="text-[#ececec]/60">Stories read</dt>
-                <dd className="font-tabular font-semibold text-white">
-                  {40 + userState.readStoryIds.length}
-                </dd>
-              </div>
-              <div className="py-2.5 flex items-center justify-between">
-                <dt className="text-[#ececec]/60">Writers followed</dt>
-                <dd className="font-tabular font-semibold text-white">
-                  {15 + userState.followedWriterIds.length}
-                </dd>
-              </div>
-              <div className="py-2.5 flex items-center justify-between">
-                <dt className="text-[#ececec]/60">Collections</dt>
-                <dd className="font-tabular font-semibold text-white">{collections.length}</dd>
-              </div>
-            </dl>
-
-            <div className="pt-4 border-t border-white/12">
-              <p className="meta-label mb-2">
-                Favorite genres
-              </p>
-              <p className="text-sm font-medium text-[#5e66ff]">
-                {userState.favoriteGenres.join(' · ')}
-              </p>
-            </div>
-
-            <div className="p-4 bg-[#151517] border border-white/12 rounded-[4px]">
-              <span className="meta-label block mb-1">Reading Streak</span>
-              <p className="font-brand text-3xl text-[#5e66ff]">
-                0{userState.streakDays} DAYS
-              </p>
-              <p className="text-xs text-[#ececec]/55 mt-1">
-                You’ve read {userState.storiesReadThisWeek} stories this week.
-              </p>
-            </div>
-          </div>
-
-          <div className="md:col-span-7 space-y-6">
-            <h3 className="font-brand text-xl text-white uppercase">PUBLIC STORY COLLECTIONS</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {collections
-                .filter((c) => c.isPublic)
-                .map((col) => (
-                  <div
-                    key={col.id}
-                    className="p-5 border border-white/12 bg-[#18181b] rounded-[4px] space-y-1.5"
-                  >
-                    <p className="text-base font-semibold text-white">
-                      {col.emoji} {col.title}
-                    </p>
-                    <p className="text-xs text-[#ececec]/55">{col.description}</p>
-                    <p className="meta-label !text-[#5e66ff] pt-2">
-                      {col.storyIds.length} stories
-                    </p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-10">
-          <div className="p-6 md:p-8 bg-[#18181b] border border-white/12 rounded-[4px] flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="max-w-xl space-y-2">
-              <span className="meta-label !text-[#5e66ff] block">
-                Writer Portfolio
-              </span>
-              <h2 className="font-brand text-3xl text-white uppercase">{userState.writerName}</h2>
-              <p className="text-sm text-[#ececec]/70 leading-relaxed">{userState.writerBio}</p>
-            </div>
-
-            <div className="flex items-center gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-white/12">
-              <div>
-                <p className="font-brand text-2xl text-white">12</p>
-                <p className="meta-label">Stories</p>
-              </div>
-              <div>
-                <p className="font-brand text-2xl text-[#5e66ff]">2.4K</p>
-                <p className="meta-label">Reads</p>
-              </div>
-              <div>
-                <p className="font-brand text-2xl text-white">320</p>
-                <p className="meta-label">Followers</p>
-              </div>
-            </div>
-          </div>
-
+      {/* Unified Overview Grid: Reading + Writing Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div className="md:col-span-5 p-6 bg-[#18181b] border border-white/12 rounded-[4px] space-y-6">
           <div>
-            <h3 className="font-brand text-xl text-white uppercase mb-6">
-              PUBLISHED STORIES BY {userState.writerName}
-            </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {writerStories.map((story) => (
-                <StoryCard key={story.id} story={story} onRead={onReadStory} />
-              ))}
+            <h2 className="font-brand text-2xl text-white uppercase">
+              {unifiedName}
+            </h2>
+            <p className="meta-label mt-1">
+              Reader & Short Story Writer
+            </p>
+          </div>
+
+          <dl className="divide-y divide-white/12 text-sm">
+            <div className="py-2.5 flex items-center justify-between">
+              <dt className="text-[#ececec]/60">Stories read</dt>
+              <dd className="font-tabular font-semibold text-white">
+                {40 + userState.readStoryIds.length}
+              </dd>
             </div>
+            <div className="py-2.5 flex items-center justify-between">
+              <dt className="text-[#ececec]/60">Stories published</dt>
+              <dd className="font-tabular font-semibold text-[#5e66ff]">
+                {writerStories.length}
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between">
+              <dt className="text-[#ececec]/60">Total reads on your stories</dt>
+              <dd className="font-tabular font-semibold text-white">
+                {totalReadsOnStories.toLocaleString()}
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between">
+              <dt className="text-[#ececec]/60">Writers followed</dt>
+              <dd className="font-tabular font-semibold text-white">
+                {userState.followedWriterIds.length}
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between">
+              <dt className="text-[#ececec]/60">Story collections</dt>
+              <dd className="font-tabular font-semibold text-white">
+                {collections.length}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="pt-4 border-t border-white/12">
+            <p className="meta-label mb-2">Favorite genres</p>
+            <p className="text-sm font-medium text-[#5e66ff]">
+              {userState.favoriteGenres.join(' · ')}
+            </p>
+          </div>
+
+          <div className="p-4 bg-[#151517] border border-white/12 rounded-[4px]">
+            <span className="meta-label block mb-1">Reading Streak</span>
+            <p className="font-brand text-3xl text-[#5e66ff]">
+              0{userState.streakDays} DAYS
+            </p>
+            <p className="text-xs text-[#ececec]/55 mt-1">
+              You’ve read {userState.storiesReadThisWeek} stories this week.
+            </p>
           </div>
         </div>
-      )}
+
+        <div className="md:col-span-7 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-brand text-xl text-white uppercase">
+              YOUR PUBLIC STORY COLLECTIONS
+            </h3>
+            <span className="meta-label">
+              {collections.filter((c) => c.isPublic).length} Public
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {collections
+              .filter((c) => c.isPublic)
+              .map((col) => (
+                <div
+                  key={col.id}
+                  className="p-5 border border-white/12 bg-[#18181b] rounded-[4px] space-y-1.5"
+                >
+                  <p className="text-base font-semibold text-white">
+                    {col.emoji} {col.title}
+                  </p>
+                  <p className="text-xs text-[#ececec]/55">{col.description}</p>
+                  <p className="meta-label !text-[#5e66ff] pt-2">
+                    {col.storyIds.length} stories
+                  </p>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Published Stories Section on the Same Unified Profile */}
+      <div className="pt-8 border-t border-white/12 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span className="meta-label !text-[#5e66ff] block mb-1">
+              Author Portfolio
+            </span>
+            <h3 className="font-brand text-2xl text-white uppercase">
+              PUBLISHED STORIES BY {unifiedName} ({writerStories.length})
+            </h3>
+          </div>
+          {onOpenWriteStudio && (
+            <button
+              type="button"
+              onClick={onOpenWriteStudio}
+              className="px-4 py-2 text-xs font-semibold border border-white/12 bg-[#1c1c1f] hover:border-[#5e66ff] rounded-[4px] cursor-pointer"
+            >
+              + Write or Upload New Story
+            </button>
+          )}
+        </div>
+
+        {writerStories.length === 0 ? (
+          <div className="p-8 bg-[#18181b] border border-white/12 rounded-[4px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-base font-semibold text-white">
+                You haven’t published a story under {unifiedName} yet.
+              </p>
+              <p className="text-xs text-[#ececec]/60 mt-1">
+                Open the Write tab anytime to compose a story in the editor or upload a Word (.docx) or PDF manuscript.
+              </p>
+            </div>
+            {onOpenWriteStudio && (
+              <button
+                type="button"
+                onClick={onOpenWriteStudio}
+                className="px-4 py-2 text-xs font-semibold bg-[#5e66ff] text-white rounded-[4px] shrink-0 cursor-pointer"
+              >
+                Start Writing
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {writerStories.map((story) => (
+              <StoryCard key={story.id} story={story} onRead={onReadStory} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

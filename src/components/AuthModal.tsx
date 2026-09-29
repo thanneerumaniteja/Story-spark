@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { UserState, WriterProfile } from '../types/story';
-import { X, Check, ArrowRight, Sparkles } from 'lucide-react';
+import { X, Check, ArrowRight, Sparkles, BookOpen, PenTool } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
   currentUser: UserState;
   writers: WriterProfile[];
   onClose: () => void;
-  onLogin: (updatedUser: Partial<UserState>, redirectToWriters?: boolean) => void;
+  onLogin: (
+    updatedUser: Partial<UserState>,
+    destination?: 'discover' | 'write' | 'following'
+  ) => void;
 }
 
 const GENRE_CHOICES = [
@@ -26,34 +29,28 @@ const GENRE_CHOICES = [
 
 const DEMO_ACCOUNTS = [
   {
-    label: 'Alex (Reader)',
-    role: 'Reader',
-    readerName: 'Alex',
-    writerName: 'Arjun',
+    name: 'Arjun',
     writerId: 'writer-arjun',
-    email: 'alex@storyspark.lit',
-    favoriteGenres: ['Mystery', 'Horror', 'Science Fiction'],
-    desc: 'Follows 3 writers · 6-day reading streak · Curates 6 collections',
-  },
-  {
-    label: 'Arjun (Established Writer)',
-    role: 'Writer & Reader',
-    readerName: 'Arjun',
-    writerName: 'Arjun',
-    writerId: 'writer-arjun',
+    bio: 'Night-shift archivist and short fiction writer exploring memory, urban solitude, and quiet mysteries.',
     email: 'arjun@storyspark.lit',
-    favoriteGenres: ['Mystery', 'Psychological', 'Comedy'],
-    desc: 'Author of “The Last Train” · 2,431 reads · 320 followers',
+    favoriteGenres: ['Mystery', 'Horror', 'Science Fiction'],
+    desc: '6-day reading streak · Curates 6 collections · Published “The Last Train” (2,431 reads)',
   },
   {
-    label: 'Ananya (Fresh Voice Writer)',
-    role: 'Emerging Writer',
-    readerName: 'Ananya',
-    writerName: 'Ananya',
+    name: 'Ananya',
     writerId: 'writer-ananya',
+    bio: 'Architect turned fiction writer based in Pondicherry. Interested in dawn hours, quiet reconciliations, and small human rituals.',
     email: 'ananya@storyspark.lit',
     favoriteGenres: ['Slice of Life', 'Drama', 'Romance'],
-    desc: 'Author of “Three Minutes Before Sunrise” · 93% completion rate',
+    desc: 'Reads daily · Published “Three Minutes Before Sunrise” · 93% completion rate',
+  },
+  {
+    name: 'Nadia Vance',
+    writerId: 'writer-nadia',
+    bio: 'Botanist and fabulist weaving speculative fables about nature and fragile worlds.',
+    email: 'nadia@storyspark.lit',
+    favoriteGenres: ['Fantasy', 'Science Fiction', 'Mystery'],
+    desc: 'Follows emerging voices · 8 published short stories · 1,490 reads',
   },
 ];
 
@@ -65,15 +62,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLogin,
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [name, setName] = useState(currentUser.readerName || '');
-  const [email, setEmail] = useState('alex@storyspark.lit');
+  const [name, setName] = useState(currentUser.readerName || 'Arjun');
+  const [email, setEmail] = useState('arjun@storyspark.lit');
   const [password, setPassword] = useState('••••••••••••');
-  const [accountRole, setAccountRole] = useState<'reader' | 'writer' | 'both'>('both');
+  const [bio, setBio] = useState(
+    currentUser.writerBio ||
+      'Short story reader and writer on StorySpark.'
+  );
   const [selectedGenres, setSelectedGenres] = useState<string[]>(
     currentUser.favoriteGenres || ['Mystery', 'Science Fiction']
   );
   const [selectedWriterIds, setSelectedWriterIds] = useState<string[]>(
-    currentUser.followedWriterIds || ['writer-arjun', 'writer-ananya']
+    currentUser.followedWriterIds || ['writer-ananya', 'writer-nadia']
   );
 
   if (!isOpen) return null;
@@ -92,17 +92,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent, goToWriters = false) => {
+  const handleSubmit = (
+    e: React.FormEvent,
+    destination?: 'discover' | 'write' | 'following'
+  ) => {
     e.preventDefault();
-    const cleanName = name.trim() || 'Alex';
+    const cleanName = name.trim() || 'Arjun';
+    const slugId = `writer-${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
     onLogin(
       {
         readerName: cleanName,
-        writerName: accountRole === 'reader' ? currentUser.writerName : cleanName,
+        writerName: cleanName,
+        writerId: slugId,
+        writerBio: bio.trim() || 'StorySpark reader and short fiction writer.',
         favoriteGenres: selectedGenres.length > 0 ? selectedGenres : ['Mystery'],
         followedWriterIds: selectedWriterIds,
       },
-      goToWriters
+      destination
     );
     onClose();
   };
@@ -113,13 +119,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="flex items-start justify-between border-b border-white/12 pb-4">
           <div>
             <span className="meta-label !text-[#5e66ff] block mb-1">
-              StorySpark Literary Circle
+              One Unified StorySpark Account · Read & Write Freely
             </span>
             <h2 className="font-brand text-2xl md:text-3xl text-white uppercase">
               {mode === 'signin'
-                ? 'SIGN IN & DISCOVER WRITERS'
-                : 'CREATE YOUR ACCOUNT'}
+                ? 'SIGN IN TO STORYSPARK'
+                : 'CREATE YOUR STORYSPARK ACCOUNT'}
             </h2>
+            <p className="text-xs text-[#ececec]/60 mt-1">
+              Every account lets you discover stories, follow writers, and write or upload your own stories anytime.
+            </p>
           </div>
           <button
             type="button"
@@ -142,7 +151,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 : 'border-transparent text-[#ececec]/55 hover:text-white'
             }`}
           >
-            Sign In / Quick Switch
+            Sign In
           </button>
           <button
             type="button"
@@ -153,7 +162,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 : 'border-transparent text-[#ececec]/55 hover:text-white'
             }`}
           >
-            Join & Personalize Writers
+            Create Account
           </button>
         </div>
 
@@ -161,30 +170,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="space-y-6">
             <div>
               <p className="meta-label mb-2.5">
-                Instant One-Click Literary Profiles
+                Quick-Switch Demo Accounts (Read & Write Enabled)
               </p>
               <div className="grid grid-cols-1 gap-2.5">
                 {DEMO_ACCOUNTS.map((acc) => {
                   const isCurrent =
                     currentUser.readerName.toLowerCase() ===
-                    acc.readerName.toLowerCase();
+                    acc.name.toLowerCase();
                   return (
-                    <button
-                      key={acc.label}
-                      type="button"
-                      onClick={() => {
-                        onLogin(
-                          {
-                            readerName: acc.readerName,
-                            writerName: acc.writerName,
-                            writerId: acc.writerId,
-                            favoriteGenres: acc.favoriteGenres,
-                          },
-                          true
-                        );
-                        onClose();
-                      }}
-                      className={`p-4 border rounded-[4px] text-left flex items-center justify-between transition-colors cursor-pointer ${
+                    <div
+                      key={acc.name}
+                      className={`p-4 border rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
                         isCurrent
                           ? 'bg-[#5e66ff]/12 border-[#5e66ff]'
                           : 'bg-[#151517] border-white/12 hover:border-[#5e66ff]'
@@ -193,36 +189,80 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-base font-semibold text-white">
-                            {acc.label}
+                            {acc.name}
                           </span>
-                          <span className="meta-label !text-[#5e66ff]">· {acc.role}</span>
+                          {isCurrent && (
+                            <span className="meta-label !text-[#5e66ff]">
+                              · Signed In
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-[#ececec]/55 mt-1">{acc.desc}</p>
                       </div>
-                      <span className="text-xs font-semibold text-[#5e66ff] whitespace-nowrap ml-3">
-                        {isCurrent ? 'Active · Find Writers →' : 'Sign In →'}
-                      </span>
-                    </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onLogin(
+                              {
+                                readerName: acc.name,
+                                writerName: acc.name,
+                                writerId: acc.writerId,
+                                writerBio: acc.bio,
+                                favoriteGenres: acc.favoriteGenres,
+                              },
+                              'discover'
+                            );
+                            onClose();
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold bg-[#5e66ff] text-white rounded-[4px] hover:bg-[#4e56f0] cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Read</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onLogin(
+                              {
+                                readerName: acc.name,
+                                writerName: acc.name,
+                                writerId: acc.writerId,
+                                writerBio: acc.bio,
+                                favoriteGenres: acc.favoriteGenres,
+                              },
+                              'write'
+                            );
+                            onClose();
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold border border-white/12 bg-[#1c1c1f] text-[#ececec] hover:border-[#5e66ff] rounded-[4px] cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <PenTool className="w-3.5 h-3.5 text-[#5e66ff]" />
+                          <span>Write</span>
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             </div>
 
-            <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-4 pt-4 border-t border-white/12">
-              <p className="meta-label">
-                Or Sign In with Your Credentials
-              </p>
+            <form
+              onSubmit={(e) => handleSubmit(e)}
+              className="space-y-4 pt-4 border-t border-white/12"
+            >
+              <p className="meta-label">Sign In with Your Account</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-[#ececec]/60 mb-1">
-                    Your Display Name / Pen Name
+                    Your Name / Pen Name
                   </label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Alex or Clara"
+                    placeholder="e.g., Arjun or Clara"
                     className="w-full px-3.5 py-2 text-xs border border-white/12 rounded-[4px] bg-[#151517] text-white focus:outline-none focus:border-[#5e66ff]"
                   />
                 </div>
@@ -255,23 +295,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="pt-2 flex flex-wrap items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={(e) => handleSubmit(e, false)}
-                  className="px-4 py-2.5 text-xs font-semibold border border-white/12 rounded-[4px] bg-[#1c1c1f] hover:border-[#5e66ff] transition-colors cursor-pointer"
+                  onClick={(e) => handleSubmit(e, 'write')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border border-white/12 rounded-[4px] bg-[#1c1c1f] hover:border-[#5e66ff] transition-colors cursor-pointer"
                 >
-                  Sign In
+                  <PenTool className="w-3.5 h-3.5 text-[#5e66ff]" />
+                  <span>Sign In & Write</span>
                 </button>
                 <button
                   type="submit"
                   className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold bg-[#5e66ff] text-white hover:bg-[#4e56f0] rounded-[4px] transition-colors cursor-pointer"
                 >
-                  <span>Sign In & Find Writers</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </form>
           </div>
         ) : (
-          <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-5">
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-[#ececec]/60 mb-1">
@@ -288,36 +329,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
               <div>
                 <label className="block text-xs text-[#ececec]/60 mb-1">
-                  How will you use StorySpark?
+                  Email Address
                 </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {(
-                    [
-                      { id: 'reader', label: 'Reader' },
-                      { id: 'writer', label: 'Writer' },
-                      { id: 'both', label: 'Both' },
-                    ] as const
-                  ).map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => setAccountRole(r.id)}
-                      className={`py-2 text-xs font-semibold border rounded-[4px] transition-colors cursor-pointer ${
-                        accountRole === r.id
-                          ? 'bg-[#5e66ff] text-white border-[#5e66ff]'
-                          : 'bg-[#151517] border-white/12 text-[#ececec]/70'
-                      }`}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full px-3.5 py-2 text-xs border border-white/12 rounded-[4px] bg-[#151517] text-white focus:outline-none focus:border-[#5e66ff]"
+                />
               </div>
             </div>
 
             <div>
+              <label className="block text-xs text-[#ececec]/60 mb-1">
+                Short Bio (Shown on your profile & stories you publish)
+              </label>
+              <input
+                type="text"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="A line about what you love to read and write..."
+                className="w-full px-3.5 py-2 text-xs border border-white/12 rounded-[4px] bg-[#151517] text-white focus:outline-none focus:border-[#5e66ff]"
+              />
+            </div>
+
+            <div>
               <label className="block meta-label mb-2">
-                Select Genres to Match You with Writers
+                Favorite Genres (For Reading & Writing)
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {GENRE_CHOICES.map((g) => {
@@ -342,7 +382,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div>
               <label className="block meta-label mb-2">
-                Choose Writers to Follow ({selectedWriterIds.length} selected)
+                Follow Writers ({selectedWriterIds.length} selected)
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
                 {writers.map((w) => {
@@ -391,7 +431,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold bg-[#5e66ff] text-white hover:bg-[#4e56f0] rounded-[4px] cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Complete Setup & Explore Writers</span>
+                <span>Create Account & Start Reading / Writing</span>
               </button>
             </div>
           </form>

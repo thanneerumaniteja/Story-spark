@@ -27,6 +27,8 @@ import {
   Sparkles,
   RotateCcw,
   LogIn,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 type NavSection = 'landing' | 'discover' | 'write' | 'library' | 'following' | 'search' | 'profile';
@@ -120,10 +122,39 @@ export default function App() {
     }
   });
 
+  const [appTheme, setAppTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('storyspark_theme_v1');
+      return saved === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', appTheme);
+    try {
+      localStorage.setItem('storyspark_theme_v1', appTheme);
+    } catch {}
+  }, [appTheme]);
+
   const [userState, setUserState] = useState<UserState>(() => {
     try {
       const saved = localStorage.getItem('storyspark_user_v1');
-      return saved ? JSON.parse(saved) : INITIAL_USER_STATE;
+      if (saved) {
+        const parsed: UserState = JSON.parse(saved);
+        // Unify legacy split Alex/Arjun state into a single unified account
+        const unifiedName =
+          parsed.readerName === 'Alex' && parsed.writerName === 'Arjun'
+            ? 'Arjun'
+            : parsed.readerName || parsed.writerName || 'Arjun';
+        return {
+          ...parsed,
+          readerName: unifiedName,
+          writerName: unifiedName,
+        };
+      }
+      return INITIAL_USER_STATE;
     } catch {
       return INITIAL_USER_STATE;
     }
@@ -176,11 +207,52 @@ export default function App() {
 
   const handleLoginUpdate = (
     updatedUser: Partial<UserState>,
-    redirectToWriters = false
+    destination?: 'discover' | 'write' | 'following'
   ) => {
-    setUserState((prev) => ({ ...prev, ...updatedUser }));
-    if (redirectToWriters) {
-      setActiveNav('following');
+    const unifiedName =
+      updatedUser.readerName ||
+      updatedUser.writerName ||
+      userState.readerName ||
+      'Arjun';
+    const unifiedId =
+      updatedUser.writerId ||
+      `writer-${unifiedName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
+    setUserState((prev) => ({
+      ...prev,
+      ...updatedUser,
+      readerName: unifiedName,
+      writerName: unifiedName,
+      writerId: unifiedId,
+    }));
+
+    setWriters((prev) => {
+      const exists = prev.some(
+        (w) =>
+          w.id === unifiedId ||
+          w.name.toLowerCase() === unifiedName.toLowerCase()
+      );
+      if (exists) return prev;
+      return [
+        {
+          id: unifiedId,
+          name: unifiedName,
+          bio:
+            updatedUser.writerBio ||
+            'Short story reader and writer on StorySpark.',
+          location: 'StorySpark Circle',
+          isNewWriter: true,
+          storiesCount: 0,
+          readsCount: 0,
+          followersCount: 1,
+          favoriteGenres: updatedUser.favoriteGenres || ['Mystery'],
+        },
+        ...prev,
+      ];
+    });
+
+    if (destination) {
+      setActiveNav(destination);
     }
   };
 
@@ -443,6 +515,8 @@ export default function App() {
         onSetBookmark={handleSetBookmark}
         onAddStoryToCollection={handleAddStoryToCollection}
         onMarkCompleted={handleMarkCompleted}
+        appTheme={appTheme}
+        onChangeAppTheme={setAppTheme}
       />
     );
   }
@@ -496,8 +570,42 @@ export default function App() {
           })}
         </nav>
 
-        {/* Right Actions: Profile & Sign In (Alex) */}
+        {/* Right Actions: Theme Selector (Light / Dark), Profile & Unified Sign In */}
         <div className="flex items-center gap-2">
+          {/* Light / Dark Theme Selector */}
+          <div
+            role="group"
+            aria-label="Theme Selector"
+            className="flex items-center border border-white/12 bg-[#18181b] rounded-[4px] p-0.5"
+          >
+            <button
+              type="button"
+              onClick={() => setAppTheme('light')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[3px] text-xs font-medium transition-colors cursor-pointer ${
+                appTheme === 'light'
+                  ? 'bg-[#5e66ff] text-white'
+                  : 'text-[#ececec]/60 hover:text-white'
+              }`}
+              title="Switch to Light Theme"
+            >
+              <Sun className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAppTheme('dark')}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[3px] text-xs font-medium transition-colors cursor-pointer ${
+                appTheme === 'dark'
+                  ? 'bg-[#5e66ff] text-white'
+                  : 'text-[#ececec]/60 hover:text-white'
+              }`}
+              title="Switch to Dark Theme"
+            >
+              <Moon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Dark</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setActiveNav('profile')}
@@ -923,6 +1031,7 @@ export default function App() {
             collections={collections}
             onReadStory={handleOpenStory}
             onOpenAuthModal={() => setAuthModalOpen(true)}
+            onOpenWriteStudio={() => setActiveNav('write')}
           />
         )}
       </main>
